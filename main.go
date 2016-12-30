@@ -44,13 +44,8 @@ func main() {
 		log.Fatal(exchgErr)
 	}
 
-	exchanges, exchgsErr := c.GetExchangeRates()
-	if exchgsErr != nil {
-		log.Fatal(exchgsErr)
-	}
 	exchangePYG := int(exchange)
 	sExchangePYG := formatCommas(exchangePYG)
-	fmt.Println(exchanges["btc_to_pyg"])
 
 	tweet, resp, sendErr := client.Statuses.Update("1 BTC son: "+sExchangePYG+"Gs.", nil)
 
