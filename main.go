@@ -38,7 +38,7 @@ func tweetCurrency(exchangePYG string) {
 	currentTime := time.Now().Local()
 	timeFormatted := currentTime.Format("2006-01-02 15:04:05")
 
-	_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs.", nil)
+	_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #btcXpyg #guaranies #py #bitcoin", nil)
 	fmt.Println("Tweeted at ", timeFormatted)
 	fmt.Println("Resp ", resp)
 
@@ -48,7 +48,7 @@ func tweetCurrency(exchangePYG string) {
 }
 
 func main() {
-	ticker := time.NewTicker(time.Hour)
+	ticker := time.NewTicker(time.Hour * 12)
 
 	if envErr != nil {
 		log.Fatal(envErr)
