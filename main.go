@@ -32,10 +32,23 @@ func formatCommas(num int) string {
 	}
 }
 
-func main() {
-	tickChan := time.NewTicker(time.Second * 10).C
+func tweetCurrency(exchangePYG string) {
 
 	client := twitter.NewClient(httpClient)
+	currentTime := time.Now().Local()
+	timeFormatted := currentTime.Format("2006-01-02 15:04:05")
+
+	_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs.", nil)
+	fmt.Println("Tweeted at ", timeFormatted)
+	fmt.Println("Resp ", resp)
+
+	if sendErr != nil {
+		log.Fatal(sendErr)
+	}
+}
+
+func main() {
+	ticker := time.NewTicker(time.Hour)
 
 	if envErr != nil {
 		log.Fatal(envErr)
@@ -50,18 +63,7 @@ func main() {
 	sExchangePYG := formatCommas(exchangePYG)
 
 	for {
-		select {
-		case <-tickChan:
-			currentTime := time.Now().Local()
-			timeFormatted := currentTime.Format("2006-01-02 15:04:05")
-
-			_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+sExchangePYG+"Gs.", nil)
-			fmt.Println("Tweeted at ", timeFormatted)
-			fmt.Println("Resp ", resp)
-
-			if sendErr != nil {
-				log.Fatal(sendErr)
-			}
-		}
+		tweetCurrency(sExchangePYG)
+		<-ticker.C
 	}
 }
