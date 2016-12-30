@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
@@ -32,6 +33,7 @@ func formatCommas(num int) string {
 }
 
 func main() {
+	tickChan := time.NewTicker(time.Second * 10).C
 
 	client := twitter.NewClient(httpClient)
 
@@ -47,12 +49,19 @@ func main() {
 	exchangePYG := int(exchange)
 	sExchangePYG := formatCommas(exchangePYG)
 
-	tweet, resp, sendErr := client.Statuses.Update("1 BTC son: "+sExchangePYG+"Gs.", nil)
+	for {
+		select {
+		case <-tickChan:
+			currentTime := time.Now().Local()
+			timeFormatted := currentTime.Format("2006-01-02 15:04:05")
 
-	fmt.Println("Tweet ", tweet)
-	fmt.Println("Resp ", resp)
+			_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+sExchangePYG+"Gs.", nil)
+			fmt.Println("Tweeted at ", timeFormatted)
+			fmt.Println("Resp ", resp)
 
-	if sendErr != nil {
-		log.Fatal(sendErr)
+			if sendErr != nil {
+				log.Fatal(sendErr)
+			}
+		}
 	}
 }
