@@ -32,8 +32,18 @@ func formatCommas(num int) string {
 	}
 }
 
-func tweetCurrency(exchangePYG string) {
+func getExchange() (s string) {
+	exchange, exchgErr := c.GetExchangeRate("btc", "pyg")
+	if exchgErr != nil {
+		log.Fatal(exchgErr)
+	}
 
+	exchangePYG := int(exchange)
+	s = formatCommas(exchangePYG)
+	return
+}
+
+func tweetCurrency(exchangePYG string) {
 	client := twitter.NewClient(httpClient)
 	currentTime := time.Now().Local()
 	timeFormatted := currentTime.Format("2006-01-02 15:04:05")
@@ -54,16 +64,9 @@ func main() {
 		log.Fatal(envErr)
 	}
 
-	exchange, exchgErr := c.GetExchangeRate("btc", "pyg")
-	if exchgErr != nil {
-		log.Fatal(exchgErr)
-	}
-
-	exchangePYG := int(exchange)
-	sExchangePYG := formatCommas(exchangePYG)
-
 	for {
-		tweetCurrency(sExchangePYG)
+		exchangePYG := getExchange()
+		tweetCurrency(exchangePYG)
 		<-ticker.C
 	}
 }
