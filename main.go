@@ -15,10 +15,12 @@ import (
 )
 
 var envErr = godotenv.Load()
-var c = coinbase.ApiKeyClient(os.Getenv("CB_API_KEY"), os.Getenv("CB_SECRET_KEY"))
+var cb = coinbase.ApiKeyClient(os.Getenv("CB_API_KEY"), os.Getenv("CB_SECRET_KEY"))
 var config = oauth1.NewConfig(os.Getenv("TW_API_KEY"), os.Getenv("TW_API_SECRET"))
 var token = oauth1.NewToken(os.Getenv("TW_ACCESS_TOKEN"), os.Getenv("TW_TOKEN_SECRET"))
 var httpClient = config.Client(oauth1.NoContext, token)
+var fTicketHour = "00:00"
+var sTicketHour = "12:00"
 
 func formatCommas(num int) string {
 	numString := strconv.Itoa(num)
@@ -32,22 +34,24 @@ func formatCommas(num int) string {
 	}
 }
 
-func getExchange() (s string) {
-	exchange, exchgErr := c.GetExchangeRate("btc", "pyg")
-	if exchgErr != nil {
-		log.Fatal(exchgErr)
+func getExchange(c chan bool, x chan string) {
+	for {
+		<-c
+		exchange, exchgErr := cb.GetExchangeRate("btc", "pyg")
+		if exchgErr != nil {
+			log.Fatal(exchgErr)
+		}
+		exchangePYG := int(exchange)
+		s := formatCommas(exchangePYG)
+		x <- s
 	}
-
-	exchangePYG := int(exchange)
-	s = formatCommas(exchangePYG)
-	return
 }
 
-func tweetCurrency(exchangePYG string) {
+func tweetCurrency(xMsg chan string) {
 	client := twitter.NewClient(httpClient)
 	currentTime := time.Now().Local()
 	timeFormatted := currentTime.Format("2006-01-02 15:04:05")
-
+	exchangePYG := <-xMsg
 	_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #btcXpyg #guaranies #py #bitcoin", nil)
 	fmt.Println("Tweeted at ", timeFormatted)
 	fmt.Println("Resp ", resp)
@@ -57,16 +61,27 @@ func tweetCurrency(exchangePYG string) {
 	}
 }
 
+func getDate(c chan bool) {
+	utcLoc, _ := time.LoadLocation("America/Asuncion")
+	utcNow := time.Now().In(utcLoc).Format("15:04")
+	if utcNow == fTicketHour || utcNow == sTicketHour {
+		c <- true
+	}
+}
+
 func main() {
-	ticker := time.NewTicker(time.Hour * 12)
+	ticker := time.NewTicker(time.Minute)
+	dChan := make(chan bool)
+	xChan := make(chan string)
 
 	if envErr != nil {
 		log.Fatal(envErr)
 	}
 
 	for {
-		exchangePYG := getExchange()
-		tweetCurrency(exchangePYG)
+		go getDate(dChan)
+		go getExchange(dChan, xChan)
+		go tweetCurrency(xChan)
 		<-ticker.C
 	}
 }
