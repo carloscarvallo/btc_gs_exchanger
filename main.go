@@ -48,16 +48,18 @@ func getExchange(c chan bool, x chan string) {
 }
 
 func tweetCurrency(xMsg chan string) {
-	exchangePYG := <-xMsg
-	client := twitter.NewClient(httpClient)
-	currentTime := time.Now().Local()
-	timeFormatted := currentTime.Format("2006-01-02 15:04:05")
-	_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #btcXpyg #guaranies #py #bitcoin", nil)
-	fmt.Println("Tweeted at ", timeFormatted)
-	fmt.Println("Resp ", resp)
+	for {
+		exchangePYG := <-xMsg
+		client := twitter.NewClient(httpClient)
+		currentTime := time.Now().Local()
+		timeFormatted := currentTime.Format("2006-01-02 15:04:05")
+		_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #btcXpyg #guaranies #py #bitcoin", nil)
+		fmt.Println("Tweeted at ", timeFormatted)
+		fmt.Println("Resp ", resp)
 
-	if sendErr != nil {
-		log.Fatal(sendErr)
+		if sendErr != nil {
+			log.Fatal(sendErr)
+		}
 	}
 }
 
