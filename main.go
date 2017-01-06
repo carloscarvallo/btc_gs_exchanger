@@ -20,7 +20,9 @@ var config = oauth1.NewConfig(os.Getenv("TW_API_KEY"), os.Getenv("TW_API_SECRET"
 var token = oauth1.NewToken(os.Getenv("TW_ACCESS_TOKEN"), os.Getenv("TW_TOKEN_SECRET"))
 var httpClient = config.Client(oauth1.NoContext, token)
 var fTicketHour = "00:00"
-var sTicketHour = "12:00"
+var sTicketHour = "6:00"
+var tTicketHour = "12:00"
+var frTicketHour = "18:00"
 
 func formatCommas(num int) string {
 	numString := strconv.Itoa(num)
@@ -51,8 +53,13 @@ func tweetCurrency(xMsg chan string) {
 	for {
 		exchangePYG := <-xMsg
 		client := twitter.NewClient(httpClient)
-		currentTime := time.Now().Local()
-		timeFormatted := currentTime.Format("2006-01-02 15:04:05")
+		currentTime, locationErr := time.LoadLocation("America/Asuncion")
+
+		if locationErr != nil {
+			log.Fatal(locationErr)
+		}
+
+		timeFormatted := time.Now().In(currentTime).Format("2006-01-02 15:04")
 		_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #btcXpyg #guaranies #py #bitcoin", nil)
 		fmt.Println("Tweeted at ", timeFormatted)
 		fmt.Println("Resp ", resp)
@@ -66,7 +73,7 @@ func tweetCurrency(xMsg chan string) {
 func getDate(c chan bool) {
 	utcLoc, _ := time.LoadLocation("America/Asuncion")
 	utcNow := time.Now().In(utcLoc).Format("15:04")
-	if utcNow == fTicketHour || utcNow == sTicketHour {
+	if utcNow == fTicketHour || utcNow == sTicketHour || utcNow == tTicketHour || utcNow == frTicketHour {
 		c <- true
 	}
 }
