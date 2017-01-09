@@ -20,7 +20,7 @@ var config = oauth1.NewConfig(os.Getenv("TW_API_KEY"), os.Getenv("TW_API_SECRET"
 var token = oauth1.NewToken(os.Getenv("TW_ACCESS_TOKEN"), os.Getenv("TW_TOKEN_SECRET"))
 var httpClient = config.Client(oauth1.NoContext, token)
 var fTicketHour = "00:00"
-var sTicketHour = "6:00"
+var sTicketHour = "06:00"
 var tTicketHour = "12:00"
 var frTicketHour = "18:00"
 
