@@ -60,7 +60,7 @@ func tweetCurrency(xMsg chan string) {
 		}
 
 		timeFormatted := time.Now().In(currentTime).Format("2006-01-02 15:04")
-		_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #btcXpyg #guaranies #py #bitcoin", nil)
+		_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #gs #pyg #bitcoin #paraguay #guaranies", nil)
 		fmt.Println("Tweeted at ", timeFormatted)
 		fmt.Println("Resp ", resp)
 
@@ -71,7 +71,12 @@ func tweetCurrency(xMsg chan string) {
 }
 
 func getDate(c chan bool) {
-	utcLoc, _ := time.LoadLocation("America/Asuncion")
+	utcLoc, locationErr := time.LoadLocation("America/Asuncion")
+
+	if locationErr != nil {
+		log.Fatal(locationErr)
+	}
+
 	utcNow := time.Now().In(utcLoc).Format("15:04")
 	if utcNow == fTicketHour || utcNow == sTicketHour || utcNow == tTicketHour || utcNow == frTicketHour {
 		c <- true
