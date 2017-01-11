@@ -19,10 +19,18 @@ var cb = coinbase.ApiKeyClient(os.Getenv("CB_API_KEY"), os.Getenv("CB_SECRET_KEY
 var config = oauth1.NewConfig(os.Getenv("TW_API_KEY"), os.Getenv("TW_API_SECRET"))
 var token = oauth1.NewToken(os.Getenv("TW_ACCESS_TOKEN"), os.Getenv("TW_TOKEN_SECRET"))
 var httpClient = config.Client(oauth1.NoContext, token)
-var fTicketHour = "00:00"
-var sTicketHour = "06:00"
-var tTicketHour = "12:00"
-var frTicketHour = "18:00"
+
+const (
+	fTicketHour  = "00:00"
+	sTicketHour  = "06:00"
+	tTicketHour  = "12:00"
+	frTicketHour = "18:00"
+
+	baseCurrency  = "USD"
+	quoteCurrency = "PYG"
+
+	tz = "America/Asuncion"
+)
 
 func formatCommas(num int) string {
 	numString := strconv.Itoa(num)
@@ -39,7 +47,7 @@ func formatCommas(num int) string {
 func getExchange(c chan bool, x chan string) {
 	for {
 		<-c
-		exchange, exchgErr := cb.GetExchangeRate("btc", "pyg")
+		exchange, exchgErr := cb.GetExchangeRate(baseCurrency, quoteCurrency)
 		if exchgErr != nil {
 			log.Fatal(exchgErr)
 		}
@@ -53,14 +61,17 @@ func tweetCurrency(xMsg chan string) {
 	for {
 		exchangePYG := <-xMsg
 		client := twitter.NewClient(httpClient)
-		currentTime, locationErr := time.LoadLocation("America/Asuncion")
+		currentTime, locationErr := time.LoadLocation(tz)
 
 		if locationErr != nil {
 			log.Fatal(locationErr)
 		}
 
 		timeFormatted := time.Now().In(currentTime).Format("2006-01-02 15:04")
-		_, resp, sendErr := client.Statuses.Update(timeFormatted+"\n1 BTC son: "+exchangePYG+"Gs. #btc #gs #pyg #bitcoin #paraguay #guaranies", nil)
+
+		statusMessage := fmt.Sprintf("%s\n1 BTC son: %sGs. #btc #gs #pyg #bitcoin #paraguay #guaranies", timeFormatted, exchangePYG)
+
+		_, resp, sendErr := client.Statuses.Update(statusMessage, nil)
 		fmt.Println("Tweeted at ", timeFormatted)
 		fmt.Println("Resp ", resp)
 
