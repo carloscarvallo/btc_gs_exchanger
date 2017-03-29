@@ -82,7 +82,7 @@ func tweetCurrency(xMsg chan string) {
 }
 
 func getDate(c chan bool) {
-	utcLoc, locationErr := time.LoadLocation("America/Asuncion")
+	utcLoc, locationErr := time.LoadLocation(tz)
 
 	if locationErr != nil {
 		log.Fatal(locationErr)
