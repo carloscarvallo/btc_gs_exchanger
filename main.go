@@ -34,7 +34,7 @@ const (
 
 func formatCommas(num int) string {
 	numString := strconv.Itoa(num)
-	re := regexp.MustCompile("(\\d+)(\\d{3})")
+	re := regexp.MustCompile(`(\d+)(\d{3})`)
 	for {
 		formatted := re.ReplaceAllString(numString, "$1.$2")
 		if formatted == numString {
