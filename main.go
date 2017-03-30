@@ -34,7 +34,7 @@ const (
 
 func formatCommas(num int) string {
 	numString := strconv.Itoa(num)
-	re := regexp.MustCompile("(\\d+)(\\d{3})")
+	re := regexp.MustCompile(`(\d+)(\d{3})`)
 	for {
 		formatted := re.ReplaceAllString(numString, "$1.$2")
 		if formatted == numString {
@@ -82,7 +82,7 @@ func tweetCurrency(xMsg chan string) {
 }
 
 func getDate(c chan bool) {
-	utcLoc, locationErr := time.LoadLocation("America/Asuncion")
+	utcLoc, locationErr := time.LoadLocation(tz)
 
 	if locationErr != nil {
 		log.Fatal(locationErr)
